@@ -93,8 +93,10 @@ ui <- fluidPage(
       
       checkboxInput("clusterLabels", "Cluster Labels", value = T),
       
-      checkboxInput("legend", "Legend", value = T)
+      checkboxInput("legend", "Legend", value = T),
       
+      downloadButton("HeatmapImage", "Download Plot as .png"),
+      downloadButton("HeatmapEPS", "Download Plot as .eps file")
       
     ),
     
@@ -162,7 +164,36 @@ server <- function(input, output) {
       height = reactiveHeight(),
       res = 300
     )
+    
   })
+  
+  output$HeatmapImage <- downloadHandler(
+    filename = function() { paste(input$dataset, "_Heatmap", '.png', sep='') },
+    content = function(file) {
+      ggsave(file,
+             plot = reactiveHeatmap(),
+             device = "png",
+             units = "in",
+             width = reactiveWidth()/300,
+             height = reactiveHeight()/300,
+             dpi = 300
+      )
+    }
+  )
+  
+  output$HeatmapEPS <- downloadHandler(
+    filename = function() { paste(input$dataset, "_Heatmap", '.eps', sep='') },
+    content = function(file) {
+      ggsave(file,
+             plot = reactiveHeatmap(),
+             device = "eps",
+             units = "in",
+             width = reactiveWidth()/300,
+             height = reactiveHeight()/300,
+             dpi = 300
+      )
+    }
+  )
   
 }
 
