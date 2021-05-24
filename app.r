@@ -1,4 +1,6 @@
 library(shiny)
+library(Seurat)
+library(ggplot2)
 
 #Define Global Variables
 
