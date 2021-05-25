@@ -5,20 +5,25 @@ library(ggplot2)
 #Define Global Variables
 
 load("data/day109.Rdata")
+load("data/day20.Rdata")
+load("data/Day20_Prosense.Rdata")
 
 seurat.objects <- list(
-  Day_20 = "Day_20",
-  Day_109 = day109.seurat
+  Day_109 = day109.seurat,
+  Day_20 = day20.seurat,
+  Day_20_PS = prosense.seurat
 )
 
 feature.list <- list(
-  Day_20 = "Day_20",
-  Day_109 = day109.features
+  Day_109 = day109.features,
+  Day_20 = day20.features,
+  Day_20_PS = prosense.features
 )
 
 pal.list <- list(
-  Day_20 = "Day_20",
-  Day_109 = day109.palette
+  Day_109 = day109.palette,
+  Day_20 = day20.palette,
+  Day_20_PS = prosense.palette
 )
 
 # Define UI for app that draws a histogram ----
@@ -44,7 +49,8 @@ ui <- fluidPage(
         "dataset",
         "Dataset",
         c("Day 109 Hair Cells" = "Day_109",
-          "Day 20 Prosensory" = "Day_20"
+          "Day 20 Full Dataset" = "Day_20",
+          "Day 20 Prosensory" = "Day_20_PS"
           )
       ),
       
@@ -116,11 +122,37 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   
+  # observe ({
+  #   if (input$dataset == "Day_20") { 
+  #     load("data/day20.Rdata")
+  #     seurat.objects$Day_20 <- day20.seurat
+  #     feature.list$Day_20 <- day20.features
+  #     pal.list$Day_20 <- day20.palette
+  #   } else if (input$dataset == "Day_20_PS") {
+  #     load("data/Day20_Prosense.Rdata")
+  #     seurat.objects$Day_20_PS <- prosense.seurat
+  #     feature.list$Day_20_PS <- prosense.features
+  #     pal.list$Day_20_PS <- prosense.palette
+  #   }
+  # })
+  # Getting this working should improve load speeds, but it isn't necessary for basic functionality
+  # TODO: Figure out how scoping works
+  
   # 1. It is "reactive" and therefore should be automatically
   #    re-executed when inputs (input$bins) change
   # 2. Its output type is a plot
   reactiveHeatmap <- reactive ({
-    
+    if (input$dataset == "Day_20" & !exists("day20.seurat")) { 
+      load("data/day20.Rdata")
+      seurat.objects$Day_20 <- day20.seurat
+      feature.list$Day_20 <- day20.features
+      pal.list$Day_20 <- day20.palette
+    } else if (input$dataset == "Day_20_PS" & !exists("prosense.seurat")) {
+      load("data/Day20_Prosense.Rdata")
+      seurat.objects$Day_20_PS <- prosense.seurat
+      feature.list$Day_20_PS <- prosense.features
+      pal.list$Day_20_PS <- prosense.palette
+    }
     
     labeledHeat <- Seurat::DoHeatmap(seurat.objects[[input$dataset]],
                                      features = feature.list[[input$dataset]]$gene,
@@ -159,6 +191,7 @@ server <- function(input, output) {
   
   
   observe({
+    
     output$Heatmap <- renderPlot({
       
       reactiveHeatmap() },
